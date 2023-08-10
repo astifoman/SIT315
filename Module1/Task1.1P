@@ -18,6 +18,7 @@ void loop() {
 
   if (temperatureC > 30) {
     digitalWrite(ledPin, HIGH); // Turn on the LED if temperature exceeds 30 degrees celsius
+    Serial.println("LED ON");
   } else {
     digitalWrite(ledPin, LOW); // Turn off the LED if it is below 30 degrees
   }

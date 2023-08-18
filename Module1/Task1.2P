@@ -1,1 +1,33 @@
+const int ledPin = 13;    // LED pin
+const int tempPin = A0;   // Temperature pin
+const int interruptPin = 2;  // Interrupt pin, push button needs to be added to trigger readTemperature function 
+
+void setup() {
+  pinMode(ledPin, OUTPUT);      // Setting the LED pin
+  pinMode(interruptPin, INPUT_PULLUP); // Setting the interrupt pin
+  Serial.begin(9600); 
+  
+  attachInterrupt(digitalPinToInterrupt(interruptPin), readTemperature, FALLING);
+}
+
+void loop() {
+  
+}
+
+void readTemperature() {
+  int sensorValue = analogRead(tempPin);  // Reading from temp pin
+  float voltage = sensorValue * (5.0 / 1023.0);  // Convert sensor value to voltage
+  float temperatureC = (voltage - 0.5) * 100;  // Convert voltage to temperature in Celsius
+
+  Serial.print("Temperature: ");
+  Serial.print(temperatureC);
+  Serial.println(" °C");
+
+  if (temperatureC > 30) {
+    digitalWrite(ledPin, HIGH); // Turn on the LED if temperature exceeds 30 degrees celsius
+    Serial.println("LED ON");
+  } else {
+    digitalWrite(ledPin, LOW);  // Turn off the LED if it is below 30 degrees
+  }
+}
 

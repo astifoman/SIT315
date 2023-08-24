@@ -1,0 +1,65 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+
+int main() {
+
+    srand(time(0));
+
+    const int N = 3;  // Matrix Size
+    int A[N][N], B[N][N], C[N][N];
+
+    // Filling matrixes A and B
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            A[i][j] = rand() % 10;
+            B[i][j] = rand() % 10;
+        }
+    }
+
+    // Initializing matrix C with 0's
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            C[i][j] = 0;
+        }
+    }
+
+    // Start timer
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Matrix multiplication that is calculated
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+
+    // Stop timer
+    auto stop = std::chrono::high_resolution_clock::now();
+
+    // Calculate duration
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+    std::cout << "Time taken to multiply matrices: ";
+    std::cout << duration.count();
+    std::cout << " microseconds";
+    std::cout << std::endl;
+
+    // Writing the result to a file
+    std::ofstream outputFile("result.txt");
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            outputFile << C[i][j] << " ";
+        }
+        outputFile << std::endl;
+    }
+    outputFile.close();
+
+    std::cout << "Result saved to result.txt." << std::endl;
+
+    return 0;
+}

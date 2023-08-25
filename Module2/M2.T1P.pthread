@@ -1,0 +1,103 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+#include <pthread.h>
+
+int** A, ** B, ** C; // Matrix initialization
+int N;  // Matrix Size
+int threadCount;  // Number of threads
+
+// Multiplication of matrices function
+void* multiply(void* row) {
+    int i = *((int*)row);
+    for (int j = 0; j < N; j++) {
+        C[i][j] = 0;
+        for (int k = 0; k < N; k++) {
+            C[i][j] += A[i][k] * B[k][j];
+        }
+    }
+    return 0;
+}
+
+int main() {
+    // Input for matrix size and threadCount variable
+    std::cout << "Enter the matrix size (N x N): ";
+    std::cin >> N;
+    std::cout << "Enter the number of threads to use: ";
+    std::cin >> threadCount;
+
+    srand(time(0));
+
+    // Dynamic Allocation
+    A = new int* [N];
+    B = new int* [N];
+    C = new int* [N];
+    for (int i = 0; i < N; i++) {
+        A[i] = new int[N];
+        B[i] = new int[N];
+        C[i] = new int[N];
+    }
+
+    // Filling matrices A and B
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            A[i][j] = rand() % 10;
+            B[i][j] = rand() % 10;
+        }
+    }
+
+    // Thread creation
+    pthread_t* threads = new pthread_t[threadCount];
+    int* rowIndices = new int[threadCount];
+
+
+    // Start timer
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Create threads to multiply rows
+    for (int i = 0; i < threadCount; i++) {
+        rowIndices[i] = i;
+        pthread_create(&threads[i], NULL, multiply, (void*)&rowIndices[i]);
+    }
+
+    for (int i = 0; i < threadCount; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // Stop timer
+    auto stop = std::chrono::high_resolution_clock::now();
+
+    // Calculate duration
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+    std::cout << "Time taken to multiply matrices: " << duration.count() << " microseconds" << std::endl;
+
+    // Writing the result to a file
+    std::ofstream outputFile("result.txt");
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            outputFile << C[i][j] << " ";
+        }
+        outputFile << std::endl;
+    }
+    outputFile.close();
+
+    std::cout << "Result saved to result.txt." << std::endl;
+
+    // Cleanup
+    for (int i = 0; i < N; i++) {
+        delete[] A[i];
+        delete[] B[i];
+        delete[] C[i];
+    }
+    delete[] A;
+    delete[] B;
+    delete[] C;
+
+    delete[] threads;
+    delete[] rowIndices;
+
+    return 0;
+}

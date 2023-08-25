@@ -1,0 +1,89 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+#include <omp.h> 
+
+int main() {
+
+	srand(time(0));
+
+	const int N = 1000;  // Matrix Size
+
+	int** A = new int* [N];
+	int** B = new int* [N];
+	int** C = new int* [N];
+	for (int i = 0; i < N; ++i) {
+		A[i] = new int[N];
+		B[i] = new int[N];
+		C[i] = new int[N];
+	}
+
+	// Filling matrixes A and B
+	#pragma omp parallel for
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			A[i][j] = rand() % 10;
+			B[i][j] = rand() % 10;
+		}
+	}
+
+	// Start timer
+	auto start = std::chrono::high_resolution_clock::now();
+
+	// Initializing matrix C with 0's
+	#pragma omp parallel for
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			C[i][j] = 0;
+		}
+	}
+
+	// Matrix multiplication that is calculated
+	#pragma omp parallel for
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			int sum = 0;
+			for (int k = 0; k < N; k++) {
+				sum += A[i][k] * B[k][j];
+			}
+			C[i][j] = sum;
+		}
+	}
+
+
+	// Stop timer
+	auto stop = std::chrono::high_resolution_clock::now();
+
+	// Calculate duration
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+
+	std::cout << "Time taken to multiply matrices: ";
+	std::cout << duration.count();
+	std::cout << " microseconds";
+	std::cout << std::endl;
+
+	// Writing the result to a file
+	std::ofstream outputFile("result.txt");
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			outputFile << C[i][j] << " ";
+		}
+		outputFile << std::endl;
+	}
+	outputFile.close();
+
+	std::cout << "Result saved to result.txt." << std::endl;
+
+	for (int i = 0; i < N; ++i) {
+		delete[] A[i];
+		delete[] B[i];
+		delete[] C[i];
+	}
+	delete[] A;
+	delete[] B;
+	delete[] C;
+
+	return 0;
+}
